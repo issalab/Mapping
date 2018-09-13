@@ -50,7 +50,7 @@ trainfraci = 0.8 # image trainfrac
 splitfract= 0.5   # trial splitfrac
 nfoldi = 5
 nfoldt = 5
-ni = 200
+ni = 20
 
 Data = 'synthetic'#'HvM'
 
