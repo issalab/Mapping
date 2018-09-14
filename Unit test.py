@@ -47,7 +47,7 @@ trainfraci = 0.8  # image trainfrac
 splitfract = 0.5  # trial splitfrac
 nfoldi = 1
 nfoldt = 1
-ni = 2000
+ni = 400
 
 Data_type = 'HvM'  # 'synthetic'#'HvM'
 
@@ -86,7 +86,7 @@ elif Data_type == 'synthetic':
 
 
 #reg_method = 'ridge'#'OMP'# 'PLS'#'ridge
-report_sitefit = True
+report_sitefit = False
 
 spearman_brown = False
 for reg_method in ['ridge', 'OMP', 'PLS']:
