@@ -23,6 +23,8 @@ def get_mappings_unit_test(M, D, Data_type, Data_params, reg_method, reg_params,
     r22_reg_sitfit = np.zeros((sd.shape[0], nf, nfoldi, nfoldt))
 
     start = time.time()
+    time_sitefit = []
+    time_popfit = []
 
     for s in range(sd.shape[0]):
         print(s, time.time() - start, end="")
@@ -89,8 +91,8 @@ def get_mappings_unit_test(M, D, Data_type, Data_params, reg_method, reg_params,
                     else:
                         r22_reg[s, :, fi, ft] = r_RHS_sites
                         r11_reg[s, :, fi, ft] = r_LHS_sites
-                    time_popfit = time.time() - start_popfit
-                    print('popfit took %.2f seconds' % (time_popfit))
+                    time_popfit.append([time.time() - start_popfit])
+
 
 
                 # site fit
@@ -112,8 +114,10 @@ def get_mappings_unit_test(M, D, Data_type, Data_params, reg_method, reg_params,
                         else:
                             r_RHS, _ = Mapping.Denom_RHS(train_inds, test_inds, half1[:, n], half2[:, n])
                             r22_reg_sitfit[s, n, fi, ft] = r_RHS
-                    time_sitefit = time.time( ) -start_sitefit
-                    print('sitefit took %.2f seconds' % (time_sitefit))
+                    time_sitefit.append([time.time() -start_sitefit])
+
+    print('popfit for %s took %.2f seconds' %(reg_method, np.mean(time_popfit)))
+    print('sitefit for %s took %.2f seconds' %(reg_method, np.mean(time_sitefit)))
 
     r12, r11, r22 = np.mean(r12, 3), np.mean(r11, 3), np.mean(r22, 3)
     r12_reg, r11_reg, r22_reg = np.mean(r12_reg, 3), np.mean(r11_reg, 3), np.mean(r22_reg, 3)

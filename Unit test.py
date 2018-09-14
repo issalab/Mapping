@@ -89,7 +89,7 @@ elif Data_type == 'synthetic':
 report_sitefit = True
 
 spearman_brown = False
-for reg_method in ['ridge', 'PLS', 'OMP']:
+for reg_method in ['ridge', 'OMP', 'PLS']:
 
 
 
