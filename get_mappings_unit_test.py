@@ -27,7 +27,6 @@ def get_mappings_unit_test(M, D, Data_type, Data_params, reg_method, reg_params,
     time_sitefit = []
     time_popfit = []
 
-
     print(time.time() - start, end="")
     for fi in range(nfoldi):
 
@@ -37,27 +36,11 @@ def get_mappings_unit_test(M, D, Data_type, Data_params, reg_method, reg_params,
         indtesti = ind[int(ni * trainfraci):]
 
         for ft in range(nfoldt):
-            # % add Gaussian noise and create two sets of trials
-            if Data_type == 'HvM':
-                indices = np.random.permutation(nt)
-                D1 = D[:, :, indices[:int(nt * splitfract)]].mean(2)
-                D2 = D[:, :, indices[int(nt * splitfract):]].mean(2)
-            else:
-                if noise_dist == 'normal':
 
-                    noise1 = np.array([np.random.normal(0, sd, size=[ni, int(nt*splitfract)]) for sd in sds])
-                    noise1 = np.mean(noise1, 2).T
 
-                    noise2 = np.array([np.random.normal(0, sd, size=[ni, int(nt*splitfract)]) for sd in sds])
-                    noise2 = np.mean(noise2, 2).T
-
-                elif noise_dist == 'poisson':
-                    # TODO:change poisson sds
-                    noise1 = np.mean(np.random.poisson(sds[s], size=[ni, nf, int(nt * splitfract)]), 2)
-                    noise2 = np.mean(np.random.poisson(sds[s], size=[ni, nf, int(nt * splitfract)]), 2)
-
-                D1 = D + noise1
-                D2 = D + noise2
+            indices = np.random.permutation(nt)
+            D1 = D[:, :, indices[:int(nt * splitfract)]].mean(2)
+            D2 = D[:, :, indices[int(nt * splitfract):]].mean(2)
 
             # NUMERATOR: Fit on train, test on test
             Ahat = np.dot(np.linalg.pinv(M[indtraini, :]), D1[indtraini, :])

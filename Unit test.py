@@ -21,7 +21,7 @@ Mapping = Mapping()
 # NOTE: Uses pseudo-inverse regression function, replace all instances of pinv with regression
 # method of choice (i.e. ridge, PLS, etc)
 
-
+import h5py
 from get_mappings_unit_test import get_mappings_unit_test
 from ReadMeta import ReadMeta
 from ReadData import ReadData
@@ -36,9 +36,9 @@ trainfraci = 0.8  # image trainfrac
 splitfract = 0.5  # trial splitfrac
 nfoldi = 5
 nfoldt = 5
-ni = 1000
+ni = 500
 
-Data_type = 'HvM'  # 'synthetic'#'HvM'
+Data_type = 'synthetic'  # 'synthetic'#'HvM'
 
 if Data_type == 'HvM':
 
@@ -52,11 +52,42 @@ if Data_type == 'HvM':
     Data = ReadData(datadir, DF_neu)
     IT, V4 = Data.get_data()
 
-
     D = Mapping.get_Neu_trial_V36(IT[1:], [70, 170], times)
-    image_indices = np.random.randint(low=0, high=D.shape[0], size=ni)
+    image_indices = np.random.randint(low=0, high=D.shape[1], size=ni)
     D = D[:, image_indices, :]
     D = np.swapaxes(D, 0, 1)
+
+    # #test synthetic as HvM
+    # nf = 168
+    # nt = 46
+    # noise_dist = 'poisson'
+    # sds = np.logspace(-1, 1, num=int(nf))
+    # D = np.zeros((ni, nf, nt))
+    # D_mean = np.random.rand(ni, nf)
+    # for tr in range(nt):
+    #     D[:, :, tr] = D_mean
+    #
+    # noise1 = np.zeros((ni, nf, int(nt * splitfract)))
+    # noise2 = np.zeros((ni, nf, int(nt * splitfract)))
+    # for i in range(ni):
+    #     if noise_dist == 'normal':
+    #         n = np.random.rand()
+    #         noise1[i] = np.array([np.random.normal(0, sd + n, size=int(nt * splitfract)) for sd in sds])
+    #         noise2[i] = np.array([np.random.normal(0, sd + n, size=int(nt * splitfract)) for sd in sds])
+    #     elif noise_dist == 'poisson':
+    #         n = np.random.rand()
+    #         noise1[i] = np.array([np.random.poisson(sd + n, size=int(nt * splitfract)) for sd in sds])
+    #         noise2[i] = np.array([np.random.poisson(sd + n, size=int(nt * splitfract)) for sd in sds])
+    #
+    #     D[:, :, :int(nt * splitfract)] = D[:, :, :int(nt * splitfract)] + noise1
+    #     D[:, :, int(nt * splitfract):] = D[:, :, int(nt * splitfract):] + noise2
+
+
+    # to test  HvM as syntheic
+    # hf = h5py.File(resultdir+'D.h5', 'w')
+    # hf.create_dataset('D', data=D)
+    # hf.close()
+
     nf = D.shape[1]
     nt = D.shape[2]
     sds = []
@@ -68,28 +99,58 @@ if Data_type == 'HvM':
 
 elif Data_type == 'synthetic':
 
-    nf = 200  # # of features
+    nf = 168  # # of features
     nt = 50  # # of trials
     sds = np.logspace(-1, 1, num=int(nf))  # np.arange(0.5, 10, 1)
     noise_dist = 'normal'  # 'poisson'  # 'normal'
-    D = np.random.rand(ni, nf)  # model M: nf feat x ni images
+    D = np.zeros((ni, nf, nt))
+    D_mean = np.random.rand(ni, nf)  # model M: nf feat x ni images
     Collinearity = True
 
     if Collinearity:
-
         collinearity_r = np.random.uniform(low=0.8, high=1, size=nf - 1)
         # collinearity_r = np.random.uniform(low=0., high=0.1, size=nf-1)
 
         for ir, r in enumerate(collinearity_r):
-            D[ir + 1] = D[0] * r + D[ir + 1] * np.sqrt(1 - r ** 2)
+            D_mean[ir + 1] = D_mean[0] * r + D_mean[ir + 1] * np.sqrt(1 - r ** 2)
             # print(r, ss.pearsonr(M[0], M[ir+1])[0], end="")
+
+    for tr in range(nt):
+        D[:, :, tr] = D_mean
+
+    noise1 = np.zeros((ni, nf, int(nt * splitfract)))
+    noise2 = np.zeros((ni, nf, int(nt * splitfract)))
+    for i in range(ni):
+        if noise_dist == 'normal':
+            n = np.random.rand()
+            n1 = np.array([np.random.normal(0, sd + n, size=int(nt * splitfract)) for sd in sds])
+            n2 = np.array([np.random.normal(0, sd + n, size=int(nt * splitfract)) for sd in sds])
+            noise1[i] = (n1 - n1.min()) / (n1.max() - n1.min())
+            noise2[i] = (n2 - n2.min()) / (n2.max() - n2.min())
+        elif noise_dist == 'poisson':
+            n = np.random.rand()
+            n1 = np.array([np.random.poisson(sd + n, size=int(nt * splitfract)) for sd in sds])
+            n2 = np.array([np.random.poisson(sd + n, size=int(nt * splitfract)) for sd in sds])
+            noise1[i] = n1 #(n1-n1.min())/(n1.max()-n1.min())
+            noise2[i] = n2 #(n2-n2.min())/(n2.max()-n2.min())
+
+        D[:, :, :int(nt * splitfract)] = D[:, :, :int(nt * splitfract)] + noise1
+        D[:, :, int(nt * splitfract):] = D[:, :, int(nt * splitfract):] + noise2
+
+    # to test  HvM as syntheic
+    # hf = h5py.File(resultdir+'D.h5', 'r')
+    # D = np.array(hf.get('D')).mean(2)
+    # hf.close()
+
+
+
     # Create model features M = D*W from data
     A = np.random.rand(nf, nf)
-    M = np.matmul(D, A)
+    M = np.matmul(D.mean(2), A)
 
 # ------------------------------------------------------------
 # reg_method = 'ridge'#'OMP'# 'PLS'#'ridge
-report_sitefit = True
+report_sitefit = False
 
 spearman_brown = False
 corr_method_for_inv = 'pearson'  # 'spearman'
