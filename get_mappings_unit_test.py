@@ -94,14 +94,14 @@ def get_mappings_unit_test(M, D, Data_type, Data_params, reg_method, reg_params,
                 start_popfit = time.time()
 
                 if spearman_brown:
-                    r_Nom, r_Nom_sites = Mapping.Nominator(train_inds, test_inds, model_features_X, np.mean([half2, half2], axis=0), reg_method,
+                    _, r_Nom_sites = Mapping.Nominator(train_inds, test_inds, model_features_X, np.mean([half2, half2], axis=0), reg_method,
                                                            reg_params, zscored_observations, return_fitted_reg)
                 else:
-                    r_Nom, r_Nom_sites = Mapping.Nominator(train_inds, test_inds, model_features_X, half1, reg_method,
+                    _ , r_Nom_sites = Mapping.Nominator(train_inds, test_inds, model_features_X, half1, reg_method,
                                                            reg_params, zscored_observations, return_fitted_reg)
 
-                r_RHS, r_RHS_sites = Mapping.Denom_RHS(train_inds, test_inds, half1, half2)
-                r_LHS, r_LHS_sites = Mapping.Denom_LHS(train_inds, test_inds, model_features_X, half1, half2, reg_method, reg_params,
+                _, r_RHS_sites = Mapping.Denom_RHS(train_inds, test_inds, half1, half2)
+                _, r_LHS_sites = Mapping.Denom_LHS(train_inds, test_inds, model_features_X, half1, half2, reg_method, reg_params,
                                                        zscored_observations, return_fitted_reg)
                 r12_reg[:, fi, ft] = r_Nom_sites
 

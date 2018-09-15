@@ -38,7 +38,7 @@ nfoldi = 5
 nfoldt = 5
 ni = 1000
 
-Data_type = 'synthetic'  # 'synthetic'#'HvM'
+Data_type = 'HvM'  # 'synthetic'#'HvM'
 
 if Data_type == 'HvM':
 
@@ -52,9 +52,10 @@ if Data_type == 'HvM':
     Data = ReadData(datadir, DF_neu)
     IT, V4 = Data.get_data()
 
-    nf = IT[0].shape[0]
+
     D = Mapping.get_Neu_trial_V36(IT[1:], [70, 170], times)
-    D = D[:, :ni, :]
+    image_indices = np.random.randint(low=0, high=D.shape[0], size=ni)
+    D = D[:, image_indices, :]
     D = np.swapaxes(D, 0, 1)
     nf = D.shape[1]
     nt = D.shape[2]
@@ -88,7 +89,7 @@ elif Data_type == 'synthetic':
 
 # ------------------------------------------------------------
 # reg_method = 'ridge'#'OMP'# 'PLS'#'ridge
-report_sitefit = False
+report_sitefit = True
 
 spearman_brown = False
 corr_method_for_inv = 'pearson'  # 'spearman'
@@ -195,7 +196,7 @@ for reg_method in ['ridge']:
         handles, labels = ax1.get_legend_handles_labels()
         ax1.legend(handles[:2], labels[:2], loc='upper left')
         ax1.text(0.0, 0.75, 'regression:%s'%reg_method, fontsize=14)
-        ax1.set_title('VE=%.2f, N=%.2f, L= %.2f, R=%0.2f'%(np.nanmedian(r12_reg/np.sqrt(r11_reg*r22_reg)),np.median(r12_reg),                                                   np.median(r11_reg),np.median(r22_reg)))
+        ax1.set_title('VE=%.2f, N=%.2f, L= %.2f, R=%0.2f'%(np.nanmedian(r12_reg/np.sqrt(r11_reg*r22_reg)), np.median(r12_reg),                                                   np.median(r11_reg),np.median(r22_reg)))
     else:
         ax1.set_xticks([])
         ax1.axis('off')
