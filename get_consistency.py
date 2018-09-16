@@ -10,7 +10,7 @@ def get_consistency(model_layer, Neu_trial, train_inds, test_inds, time_interval
 
     start = time.time()
 
-    dum, dum, reg_fitted = self.Nominator(train_inds, test_inds, model_layer, half1, reg_method,
+    dum, dum, reg_fitted = self.Numerator(train_inds, test_inds, model_layer, half1, reg_method,
                                      reg_params, zscored_observations, return_fitted_reg)
     dum, dum, reg1_fitted, reg2_fitted = self.Denom_LHS(train_inds, test_inds, model_layer, half1, half2, reg_method,
                                                    reg_params, zscored_observations, return_fitted_reg)
@@ -31,7 +31,7 @@ def get_consistency(model_layer, Neu_trial, train_inds, test_inds, time_interval
         half1, half2 = self.mean_trial_split(inds1, inds2, self.get_Neu_trial_V36(Neu_trial, time_interval, times))
 
         # fixed map
-        r_Nom, r_Nom_sites = Nominator_fixedmap(train_inds, test_inds, model_layer, half1, reg_fitted,
+        r_Nom, r_Nom_sites = Numerator_fixedmap(train_inds, test_inds, model_layer, half1, reg_fitted,
                                                 zscored_observations)
 
         r_LHS, r_LHS_sites = Denom_LHS_fixedmap(train_inds, test_inds, model_layer, half1, half2,
@@ -51,7 +51,7 @@ def get_consistency(model_layer, Neu_trial, train_inds, test_inds, time_interval
         # flexible map
 
         return_fitted_reg = False
-        r_Nom_fl, r_Nom_sites_fl = Nominator(train_inds, test_inds, model_layer, half1, reg_method,
+        r_Nom_fl, r_Nom_sites_fl = Numerator(train_inds, test_inds, model_layer, half1, reg_method,
                                              reg_params, zscored_observations, return_fitted_reg)
 
         r_LHS_fl, r_LHS_sites_fl = Denom_LHS(train_inds, test_inds, model_layer, half1, half2, reg_method,

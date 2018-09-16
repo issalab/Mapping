@@ -161,13 +161,13 @@ class MappingV36:
             features = ss.zscore(features, axis=0)
         return features
 
-    def r_corrected_consis(self, nominator, RHS, LHS):
-        return nominator/(np.sqrt(LHS*RHS))
+    def r_corrected_consis(self, numerator, RHS, LHS):
+        return numerator/(np.sqrt(LHS*RHS))
 
     def spearman_brown_correction(self, r):
         return 2*r/(1+r)
 
-    def Nominator(self,train_inds, test_inds, model_features_X, half1, reg_method, reg_params,
+    def Numerator(self,train_inds, test_inds, model_features_X, half1, reg_method, reg_params,
                   zscored_observations, return_fitted_reg):
 
         return_pred = False
@@ -233,7 +233,7 @@ class MappingV36:
 
         return r_test, r_test_sites
 
-    def Nominator_fixedmap(self, train_inds, test_inds, features1, features2_half, reg_fitted, zscored_observations):
+    def Numerator_fixedmap(self, train_inds, test_inds, features1, features2_half, reg_fitted, zscored_observations):
 
         X = features1
         y = features2_half
@@ -334,7 +334,7 @@ class MappingV36:
 
         start = time.time()
 
-        dum, dum, reg_fitted = self.Nominator(train_inds, test_inds, model_layer, half1, reg_method,
+        dum, dum, reg_fitted = self.Numerator(train_inds, test_inds, model_layer, half1, reg_method,
                                               reg_params, zscored_observations, return_fitted_reg)
         dum, dum, reg1_fitted, reg2_fitted = self.Denom_LHS(train_inds, test_inds, model_layer, half1, half2,
                                                             reg_method,
@@ -356,7 +356,7 @@ class MappingV36:
             half1, half2 = self.mean_trial_split(inds1, inds2, self.get_Neu_trial_V36(Neu_trial, time_interval, times))
 
             # fixed map
-            r_Nom, r_Nom_sites = self.Nominator_fixedmap(train_inds, test_inds, model_layer, half1, reg_fitted,
+            r_Nom, r_Nom_sites = self.Numerator_fixedmap(train_inds, test_inds, model_layer, half1, reg_fitted,
                                                     zscored_observations)
 
             r_LHS, r_LHS_sites = self.Denom_LHS_fixedmap(train_inds, test_inds, model_layer, half1, half2,
@@ -376,7 +376,7 @@ class MappingV36:
             # flexible map
 
             return_fitted_reg = False
-            r_Nom_fl, r_Nom_sites_fl = self.Nominator(train_inds, test_inds, model_layer, half1, reg_method,
+            r_Nom_fl, r_Nom_sites_fl = self.Numerator(train_inds, test_inds, model_layer, half1, reg_method,
                                                  reg_params, zscored_observations, return_fitted_reg)
 
             r_LHS_fl, r_LHS_sites_fl = self.Denom_LHS(train_inds, test_inds, model_layer, half1, half2, reg_method,

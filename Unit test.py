@@ -125,8 +125,8 @@ elif Data_type == 'synthetic':
             n = np.random.rand()
             n1 = np.array([np.random.normal(0, sd + n, size=int(nt * splitfract)) for sd in sds])
             n2 = np.array([np.random.normal(0, sd + n, size=int(nt * splitfract)) for sd in sds])
-            noise1[i] = (n1 - n1.min()) / (n1.max() - n1.min())
-            noise2[i] = (n2 - n2.min()) / (n2.max() - n2.min())
+            noise1[i] = n1  # (n1 - n1.min()) / (n1.max() - n1.min())
+            noise2[i] = n2  # (n2 - n2.min()) / (n2.max() - n2.min())
         elif noise_dist == 'poisson':
             n = np.random.rand()
             n1 = np.array([np.random.poisson(sd + n, size=int(nt * splitfract)) for sd in sds])

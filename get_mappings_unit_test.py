@@ -77,10 +77,10 @@ def get_mappings_unit_test(M, D, Data_type, Data_params, reg_method, reg_params,
                 start_popfit = time.time()
 
                 if spearman_brown:
-                    _, r_Nom_sites = Mapping.Nominator(train_inds, test_inds, model_features_X, np.mean([half2, half2], axis=0), reg_method,
+                    _, r_Nom_sites = Mapping.Numerator(train_inds, test_inds, model_features_X, np.mean([half2, half2], axis=0), reg_method,
                                                            reg_params, zscored_observations, return_fitted_reg)
                 else:
-                    _ , r_Nom_sites = Mapping.Nominator(train_inds, test_inds, model_features_X, half1, reg_method,
+                    _ , r_Nom_sites = Mapping.Numerator(train_inds, test_inds, model_features_X, half1, reg_method,
                                                            reg_params, zscored_observations, return_fitted_reg)
 
                 _, r_RHS_sites = Mapping.Denom_RHS(train_inds, test_inds, half1, half2)
@@ -106,7 +106,7 @@ def get_mappings_unit_test(M, D, Data_type, Data_params, reg_method, reg_params,
                 start_sitefit = time.time()
                 for n in range(nf):
                     return_fitted_reg = False
-                    r_Nom, _ = Mapping.Nominator(train_inds, test_inds, model_features_X, half1[:, n], reg_method, reg_params,
+                    r_Nom, _ = Mapping.Numerator(train_inds, test_inds, model_features_X, half1[:, n], reg_method, reg_params,
                                                  zscored_observations, return_fitted_reg)
 
                     r_LHS, _ = Mapping.Denom_LHS(train_inds, test_inds, model_features_X, half1[:, n], half2[:, n], reg_method,
