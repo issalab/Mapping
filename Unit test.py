@@ -56,6 +56,19 @@ if Data_type == 'HvM':
     image_indices = np.random.randint(low=0, high=D.shape[1], size=ni)
     D = D[:, image_indices, :]
     D = np.swapaxes(D, 0, 1)
+    nf = D.shape[1]
+    nt = D.shape[2]
+
+    mu = np.zeros((nf, ni))
+    sd = np.zeros((nf, ni))
+    for f in range(nf):
+        for i in range(ni):
+            mu[f, i] = D[i, f, :].mean()
+            sd[f, i] = D[i, f, :].std()
+    hf = h5py.File(resultdir+'HvM_stats.h5', 'w')
+    hf.create_dataset('mu', data=mu)
+    hf.create_dataset('sd', data=sd)
+    hf.close()
 
     # #test synthetic as HvM
     # nf = 168
@@ -88,8 +101,7 @@ if Data_type == 'HvM':
     # hf.create_dataset('D', data=D)
     # hf.close()
 
-    nf = D.shape[1]
-    nt = D.shape[2]
+
     sds = []
     Collinearity = 'HvM'
     noise_dist = 'HvM'
@@ -101,11 +113,18 @@ elif Data_type == 'synthetic':
 
     nf = 168  # # of features
     nt = 50  # # of trials
-    sds = np.logspace(-1, 1, num=int(nf))  # np.arange(0.5, 10, 1)
-    noise_dist = 'normal'  # 'poisson'  # 'normal'
+    sds = np.logspace(-3, 1, num=int(nf))  # np.arange(0.5, 10, 1)
+    noise_dist = 'HvM_normal'  # 'normal'  # 'poisson'  # 'normal'
     D = np.zeros((ni, nf, nt))
-    D_mean = np.random.rand(ni, nf)  # model M: nf feat x ni images
-    Collinearity = True
+
+    hf = h5py.File(resultdir+'HvM_stats.h5', 'r')
+    mu = np.array(hf.get('mu')).T
+    sds = np.array(hf.get('sd')).T
+    hf.close()
+
+    D_mean = mu[:ni, :nf]  # np.random.rand(ni, nf)  # model M: nf feat x ni images
+
+    Collinearity = False
 
     if Collinearity:
         collinearity_r = np.random.uniform(low=0.8, high=1, size=nf - 1)
@@ -123,16 +142,21 @@ elif Data_type == 'synthetic':
     for i in range(ni):
         if noise_dist == 'normal':
             n = np.random.rand()
-            n1 = np.array([np.random.normal(0, sd + n, size=int(nt * splitfract)) for sd in sds])
-            n2 = np.array([np.random.normal(0, sd + n, size=int(nt * splitfract)) for sd in sds])
+            n1 = np.array([np.random.normal(0, sdf + n, size=int(nt * splitfract)) for sdf in sds])
+            n2 = np.array([np.random.normal(0, sdf + n, size=int(nt * splitfract)) for sd in sds])
             noise1[i] = n1  # (n1 - n1.min()) / (n1.max() - n1.min())
             noise2[i] = n2  # (n2 - n2.min()) / (n2.max() - n2.min())
         elif noise_dist == 'poisson':
             n = np.random.rand()
-            n1 = np.array([np.random.poisson(sd + n, size=int(nt * splitfract)) for sd in sds])
-            n2 = np.array([np.random.poisson(sd + n, size=int(nt * splitfract)) for sd in sds])
-            noise1[i] = n1 #(n1-n1.min())/(n1.max()-n1.min())
-            noise2[i] = n2 #(n2-n2.min())/(n2.max()-n2.min())
+            n1 = np.array([np.random.poisson(sdf + n, size=int(nt * splitfract)) for sdf in sds])
+            n2 = np.array([np.random.poisson(sdf + n, size=int(nt * splitfract)) for sdf in sds])
+            noise1[i] = n1  #(n1-n1.min())/(n1.max()-n1.min())
+            noise2[i] = n2  #(n2-n2.min())/(n2.max()-n2.min())
+        elif noise_dist == 'HvM_normal':
+            n1 = np.array([np.random.normal(sdf, size=int(nt * splitfract)) for sdf in sds[i]])
+            n2 = np.array([np.random.normal(sdf, size=int(nt * splitfract)) for sdf in sds[i]])
+            noise1[i] = n1  # (n1-n1.min())/(n1.max()-n1.min())
+            noise2[i] = n2  # (n2-n2.min())/(n2.max()-n2.min())
 
         D[:, :, :int(nt * splitfract)] = D[:, :, :int(nt * splitfract)] + noise1
         D[:, :, int(nt * splitfract):] = D[:, :, int(nt * splitfract):] + noise2
@@ -146,7 +170,7 @@ elif Data_type == 'synthetic':
 
     # Create model features M = D*W from data
     A = np.random.rand(nf, nf)
-    M = np.matmul(D.mean(2), A)
+    M = np.matmul(D_mean, A)
 
 # ------------------------------------------------------------
 # reg_method = 'ridge'#'OMP'# 'PLS'#'ridge
