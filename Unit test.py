@@ -36,7 +36,7 @@ trainfraci = 0.8  # image trainfrac
 splitfract = 0.5  # trial splitfrac
 nfoldi = 5
 nfoldt = 5
-ni = 300
+ni = 168
 noisy_map = False
 
 Data_type = 'synthetic'  # 'synthetic'#'HvM'
@@ -115,7 +115,7 @@ elif Data_type == 'synthetic':
     nf = 168  # # of features
     nt = 50  # # of trials
     various_unit_stds = True
-    Collinearity = False
+    Collinearity = True
 
     if various_unit_stds:
         sds = np.logspace(-1, 1, num=int(nf))  # np.arange(0.5, 10, 1)
