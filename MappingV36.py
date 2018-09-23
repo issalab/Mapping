@@ -94,12 +94,13 @@ class MappingV36:
             y_test = self.zscored_over_images(y_test)
 
         if reg_method == 'ridge':
-            # n_alphas,alpha1,alpha2 = reg_params[0],reg_params[1],reg_params[2]
-            n_alphas = 10
-            alphas = np.logspace(-6, 6, n_alphas)
+            n_alphas, alpha0, alpha1 = reg_params[0],reg_params[1],reg_params[2]
+            #n_alphas = 10
+            alphas = np.logspace(alpha0, alpha1, n_alphas)
             reg = RidgeCV(alphas=alphas, cv=10)
             reg.fit(X_train, y_train)
             reg_param = reg.alpha_
+            print('alpha for ridge', reg.alpha_)
 
         elif reg_method == 'PLS':
             n_components_PLS = reg_params

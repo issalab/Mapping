@@ -2,6 +2,7 @@ import scipy.io
 import numpy as np
 from ReadMeta import ReadMeta
 
+
 class ReadData:
     def __init__(self, datadir, DF_neu):
         self.datadir = datadir
