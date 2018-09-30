@@ -22,14 +22,21 @@ class DataMapModel:
         self.nf = nf
         self.nt = nt
 
-    def get_syntheic(self, sds, splitfract, Collinearity, noise_dist):
+    def get_syntheic(self, sds, splitfract, Collinearity, noise_dist, stats_from_data):
 
         D = np.zeros((self.ni, self.nf, self.nt))
+        if stats_from_data:
+            # import HvM mean and stds
+            hf = h5py.File(resultdir + 'HvM_stats.h5', 'r')
+            mu_HvM = np.array(hf.get('mu')).T
+            sds_HvM = np.array(hf.get('sd')).T
+            hf.close()
 
-        hf = h5py.File(resultdir + 'HvM_stats.h5', 'r')
-        mu = np.array(hf.get('mu')).T
-        # sds = np.array(hf.get('sd')).T
-        hf.close()
+            #
+            mu = mu_HvM[:self.ni, :self.nf]
+
+        else:
+            mu = np.random.rand(self.ni, self.nf)
 
         Dtruth = mu[:self.ni, :self.nf]  # np.random.rand(ni, nf)  # model M: nf feat x ni images
 
@@ -48,20 +55,29 @@ class DataMapModel:
         noise2 = np.zeros((self.ni, self.nf, int(self.nt * splitfract)))
         for i in range(self.ni):
             if noise_dist == 'normal':
+
                 n = np.random.rand()
                 n1 = np.array([np.random.normal(0, sdf, size=int(self.nt * splitfract)) for sdf in sds])
                 n2 = np.array([np.random.normal(0, sdf, size=int(self.nt * splitfract)) for sdf in sds])
                 noise1[i] = n1  # (n1 - n1.min()) / (n1.max() - n1.min())
                 noise2[i] = n2  # (n2 - n2.min()) / (n2.max() - n2.min())
+
             elif noise_dist == 'poisson':
                 n = np.random.rand()
-                n1 = np.array([np.random.poisson(sdf + n, size=int(self.nt * splitfract)) for sdf in sds])
-                n2 = np.array([np.random.poisson(sdf + n, size=int(self.nt * splitfract)) for sdf in sds])
+                n1 = np.array([np.random.poisson(sdf, size=int(self.nt * splitfract)) for sdf in sds])
+                n2 = np.array([np.random.poisson(sdf, size=int(self.nt * splitfract)) for sdf in sds])
                 noise1[i] = n1  # (n1-n1.min())/(n1.max()-n1.min())
                 noise2[i] = n2  # (n2-n2.min())/(n2.max()-n2.min())
+
             elif noise_dist == 'HvM_normal':
-                n1 = np.array([np.random.normal(sdf, size=int(self.nt * splitfract)) for sdf in sds[i]])
-                n2 = np.array([np.random.normal(sdf, size=int(self.nt * splitfract)) for sdf in sds[i]])
+                n1 = np.array([np.random.normal(0, sdf, size=int(self.nt * splitfract)) for sdf in sds_HvM[i]])
+                n2 = np.array([np.random.normal(0, sdf, size=int(self.nt * splitfract)) for sdf in sds_HvM[i]])
+                noise1[i] = n1  # (n1-n1.min())/(n1.max()-n1.min())
+                noise2[i] = n2  # (n2-n2.min())/(n2.max()-n2.min())
+
+            elif noise_dist == 'HvM_poisson':
+                n1 = np.array([np.random.poisson(abs(sdf), size=int(self.nt * splitfract)) for sdf in mu[i]])
+                n2 = np.array([np.random.poisson(abs(sdf), size=int(self.nt * splitfract)) for sdf in mu[i]])
                 noise1[i] = n1  # (n1-n1.min())/(n1.max()-n1.min())
                 noise2[i] = n2  # (n2-n2.min())/(n2.max()-n2.min())
 

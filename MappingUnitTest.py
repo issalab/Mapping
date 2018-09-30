@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.stats as ss
 import time
+from sklearn.decomposition import PCA
 from MappingV36 import MappingV36 as Mapping
 Mapping = Mapping()
 
@@ -9,20 +10,36 @@ resultdir = '/home/tahereh/Documents/Research/Results/Mapping_unit_test/'
 
 class MappingUnitTest:
 
-    def __init__(self, D, Dmu,  A, PCA_ncomponents_list):
+    def __init__(self, D, Dmu,  A, PCA_ncomponents_list, explained_var_ratio_list):
         self.D = D
         self.Dmu = Dmu
         self.A = A
+        self.nf = D.shape[1]
         self.PCA_ncomponents_list = PCA_ncomponents_list
+        self.explained_var_ratio_list = explained_var_ratio_list
 
-    def get_model(self, PCA_ncomponents):
-
+    def get_model(self, PCA_ncomponents=-1, explained_var_ratio=None):
+        # PCA_ncomponents=-1 means no PCA will be applied
+        # PCA_ncomponents=0 means we required a given explained_var_ratio
+        # PCA_ncomponents>0 means perform PCA with PCA_ncomponents components
         M = np.matmul(self.Dmu, self.A)  #
 
-        if PCA_ncomponents:
-            from sklearn.decomposition import PCA
+        if PCA_ncomponents == 0:
+            ncomponents = int(self.nf*explained_var_ratio)
+            evp = 0
+            while evp < explained_var_ratio:
+
+                pca = PCA(n_components=ncomponents)
+                pca.fit(M)
+                evp = pca.explained_variance_ratio_
+                ncomponents += 1
+            M = pca.transform(M)
+
+        elif PCA_ncomponents > 0:
+
             pca = PCA(n_components=PCA_ncomponents)
             pca.fit(M)
+            evp = pca.explained_variance_ratio_
             M = pca.transform(M)
 
         return M
@@ -62,7 +79,9 @@ class MappingUnitTest:
                 D2 = self.D[:, :, indices[int(nt * splitfract):]].mean(2)
 
                 PCA_ncomponents = self.PCA_ncomponents_list[0]
-                M = self.get_model(PCA_ncomponents)
+                explained_var_ratio = self.explained_var_ratio_list[0]
+                M = self.get_model(PCA_ncomponents, explained_var_ratio)
+
                 # NUMERATOR: Fit on train, test on test
                 Ahat = np.dot(np.linalg.pinv(M[indtraini, :]), D1[indtraini, :])
                 D1_test, D1_pred = D1[indtesti, :], np.dot(M[indtesti, :], Ahat)
@@ -92,7 +111,8 @@ class MappingUnitTest:
                 for r, reg_method in enumerate(reg_methods):
                     reg_params = reg_params_list[r]
                     PCA_ncomponents = self.PCA_ncomponents_list[r+1]
-                    M = self.get_model(PCA_ncomponents)
+                    explained_var_ratio = self.explained_var_ratio_list[r+1]
+                    M = self.get_model(PCA_ncomponents, explained_var_ratio)
 
                     train_inds, test_inds = indtraini, indtesti
                     model_features_X, half1, half2 = M, D1, D2
@@ -107,7 +127,7 @@ class MappingUnitTest:
                             _, r_Nom_sites = Mapping.Numerator(train_inds, test_inds, model_features_X, np.mean([half2, half2], axis=0), reg_method,
                                                                    reg_params, zscored_observations, return_fitted_reg)
                         else:
-                            _ , r_Nom_sites = Mapping.Numerator(train_inds, test_inds, model_features_X, half1, reg_method,
+                            _, r_Nom_sites = Mapping.Numerator(train_inds, test_inds, model_features_X, half1, reg_method,
                                                                    reg_params, zscored_observations, return_fitted_reg)
 
                         _, r_RHS_sites = Mapping.Denom_RHS(train_inds, test_inds, half1, half2)

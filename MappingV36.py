@@ -100,7 +100,8 @@ class MappingV36:
             reg = RidgeCV(alphas=alphas, cv=10)
             reg.fit(X_train, y_train)
             reg_param = reg.alpha_
-            print('alpha for ridge', reg.alpha_)
+            if reg_param in [alpha0, alpha1]:
+                print(r,'alpha for ridge', reg.alpha_)
 
         elif reg_method == 'PLS':
             n_components_PLS = reg_params
@@ -131,15 +132,14 @@ class MappingV36:
         elif len(y_test.shape) == 1:
             r_test_sites = [r_test]
 
-
-        if (return_fitted_reg == False) and (return_pred == False):
-            return r_test,reg_param,r_test_sites
-        elif (return_fitted_reg == False) and (return_pred == True):
-            return r_test,reg_param,r_test_sites, y_pred
-        elif (return_fitted_reg == True) and (return_pred == False):
-            return r_test,reg_param,r_test_sites, reg
-        elif (return_fitted_reg == True) and (return_pred == True):
-            return r_test,reg_param,r_test_sites, y_pred, reg
+        if (return_fitted_reg is False) and (return_pred is False):
+            return r_test, reg_param, r_test_sites
+        elif (return_fitted_reg is False) and (return_pred is True):
+            return r_test, reg_param, r_test_sites, y_pred
+        elif (return_fitted_reg is True) and (return_pred is False):
+            return r_test, reg_param, r_test_sites, reg
+        elif (return_fitted_reg is True) and (return_pred is True):
+            return r_test, reg_param, r_test_sites, y_pred, reg
 
 
     def demean(self,X):
