@@ -64,8 +64,8 @@ class DataMapModel:
 
             elif noise_dist == 'poisson':
                 n = np.random.rand()
-                n1 = np.array([np.random.poisson(sdf, size=int(self.nt * splitfract)) for sdf in sds])
-                n2 = np.array([np.random.poisson(sdf, size=int(self.nt * splitfract)) for sdf in sds])
+                n1 = np.array([np.random.poisson(sdf, size=int(self.nt * splitfract)) for sdf in mu[i]])
+                n2 = np.array([np.random.poisson(sdf, size=int(self.nt * splitfract)) for sdf in mu[i]])
                 noise1[i] = n1  # (n1-n1.min())/(n1.max()-n1.min())
                 noise2[i] = n2  # (n2-n2.min())/(n2.max()-n2.min())
 

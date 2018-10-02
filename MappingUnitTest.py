@@ -45,7 +45,7 @@ class MappingUnitTest:
         return M
 
     def get_mappings_unit_test(self, Data_params, reg_methods, reg_params_list, spearman_brown, report_sitefit, report_popfit):
-        ni,nf,nt,nfoldi,nfoldt,trainfraci,splitfract, noise_dist, sds, Collinearity,  various_unit_stds, corr_method_for_inv, noisy_map= Data_params
+        ni,nf,nt,nfoldi,nfoldt,trainfraci,splitfract, noise_dist, sds, Collinearity,  various_unit_stds, corr_method_for_inv, noisy_map = Data_params
 
         r12 = np.zeros((nf, nfoldi, nfoldt))
         r11 = np.zeros((nf, nfoldi, nfoldt))
@@ -59,11 +59,7 @@ class MappingUnitTest:
         r11_reg_sitfit = np.zeros((nf, len(reg_methods), nfoldi, nfoldt))
         r22_reg_sitfit = np.zeros((nf, len(reg_methods), nfoldi, nfoldt))
 
-        start = time.time()
-        time_sitefit = []
-        time_popfit = []
 
-        print(time.time() - start, end="")
         regressions_results = []
         for fi in range(nfoldi):
 
@@ -107,6 +103,10 @@ class MappingUnitTest:
                     r11[:, fi, ft] = [ss.spearmanr(lhs1[:, indf], lhs2[:, indf])[0] for indf in range(nf)]
 
                 # Regression
+                start = time.time()
+                time_sitefit = []
+                time_popfit = []
+                print(time.time() - start, end="")
 
                 for r, reg_method in enumerate(reg_methods):
                     reg_params = reg_params_list[r]
@@ -169,8 +169,8 @@ class MappingUnitTest:
                                 r22_reg_sitfit[n, r, fi, ft] = r_RHS
                         time_sitefit.append([time.time() -start_sitefit])
 
-        print('popfit for %s took %.2f seconds' %(reg_method, np.mean(time_popfit)))
-        print('sitefit for %s took %.2f seconds' %(reg_method, np.mean(time_sitefit)))
+                    print('popfit for %s took %.2f seconds' %(reg_method, np.mean(time_popfit)))
+                    print('sitefit for %s took %.2f seconds' %(reg_method, np.mean(time_sitefit)))
 
         r12, r11, r22 = np.mean(r12, 2), np.mean(r11, 2), np.mean(r22, 2)
         r12_reg, r11_reg, r22_reg = np.mean(r12_reg.mean(3), 2), np.mean(r11_reg.mean(3), 2), np.mean(r22_reg.mean(3), 2)
