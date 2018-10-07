@@ -179,6 +179,5 @@ class MappingUnitTest:
 
         data_list = [r12,r11,r22,r12_reg,r11_reg,r22_reg,r12_reg_sitfit,r11_reg_sitfit,r22_reg_sitfit]
 
-
         return data_list
 
