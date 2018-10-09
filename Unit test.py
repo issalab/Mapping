@@ -13,7 +13,7 @@ datadir = '/home/tahereh/Documents/Research/Data/DiCarlo/'
 # ------------------------------------------------------------
 nf = 20
 nc = nf
-purpose_of_this_run = 'ridgeCV40-10-10'
+purpose_of_this_run = 'ridgeCV20-10-10'
 for imag_feat_ratio in [1, 2, 4, 8, 16, 64, 128]:  #4, 8, 16, 64, 128
 
     ni = imag_feat_ratio*nf  # # of features
@@ -61,7 +61,7 @@ for imag_feat_ratio in [1, 2, 4, 8, 16, 64, 128]:  #4, 8, 16, 64, 128
     #     report_sitefit = True
 
     reg_methods = ['OMP', 'PLS', 'ridge', 'ridge']
-    reg_params_list = [[], nc, [40, -10, 10], [40, -10, 10]] # for ridge [n_alpha, alpha0, alpha1]
+    reg_params_list = [[], nc, [20, -10, 10], [20, -10, 10]] # for ridge [n_alpha, alpha0, alpha1]
     report_popfit = [False, True, True, True]  # [False, True, True]
     report_sitefit = [True, True, True, True]  # [False, False, False, False]  # [True, True, True]
 
