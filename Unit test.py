@@ -13,7 +13,10 @@ datadir = '/home/tahereh/Documents/Research/Data/DiCarlo/'
 # ------------------------------------------------------------
 nf = 20
 nc = nf
-purpose_of_this_run = 'ridgeCV20-10-10'
+purpose_of_this_run = 'ridgeCV10-10-10-sds-1to1-5sites'
+
+data_unit_indices = np.random.permutation(20)[0:5]
+
 for imag_feat_ratio in [1, 2, 4, 8, 16, 64, 128]:  #4, 8, 16, 64, 128
 
     ni = imag_feat_ratio*nf  # # of features
@@ -30,8 +33,10 @@ for imag_feat_ratio in [1, 2, 4, 8, 16, 64, 128]:  #4, 8, 16, 64, 128
     stats_from_data = False
     noise_dist = 'normal'#'normal' # 'HvM_poisson'
 
+    print(data_unit_indices)
+
     if various_unit_stds:
-        sds = np.logspace(-1, 0, num=int(nf))  # np.arange(0.5, 10, 1)
+        sds = np.logspace(-1, 1, num=int(nf))  # np.arange(0.5, 10, 1)
     else:
         sds = np.ones((nf))*sd
 
@@ -93,7 +98,7 @@ for imag_feat_ratio in [1, 2, 4, 8, 16, 64, 128]:  #4, 8, 16, 64, 128
 
     MappingUnitTest = MappingUnitTestClass(D, Dmu, A, PCA_ncomponents_list, explained_var_ratio_list)
 
-    Data_params = [ni, nf, nt, nfoldi, nfoldt, trainfraci, splitfract, noise_dist,  sds, Collinearity, various_unit_stds, corr_method_for_inv, noisy_map]
+    Data_params = [ni, nf, nt, nfoldi, nfoldt, trainfraci, splitfract, noise_dist,  sds, Collinearity, various_unit_stds, corr_method_for_inv, noisy_map, data_unit_indices]
 
     data_list = MappingUnitTest.get_mappings_unit_test(Data_params, reg_methods, reg_params_list, spearman_brown, report_sitefit, report_popfit)
 

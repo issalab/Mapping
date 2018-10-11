@@ -45,19 +45,19 @@ class MappingUnitTest:
         return M
 
     def get_mappings_unit_test(self, Data_params, reg_methods, reg_params_list, spearman_brown, report_sitefit, report_popfit):
-        ni,nf,nt,nfoldi,nfoldt,trainfraci,splitfract, noise_dist, sds, Collinearity,  various_unit_stds, corr_method_for_inv, noisy_map = Data_params
+        ni,nf,nt,nfoldi,nfoldt,trainfraci,splitfract, noise_dist, sds, Collinearity,  various_unit_stds, corr_method_for_inv, noisy_map, data_unit_indices = Data_params
 
-        r12 = np.zeros((nf, nfoldi, nfoldt))
-        r11 = np.zeros((nf, nfoldi, nfoldt))
-        r22 = np.zeros((nf, nfoldi, nfoldt))
+        r12 = np.zeros((len(data_unit_indices), nfoldi, nfoldt))
+        r11 = np.zeros((len(data_unit_indices), nfoldi, nfoldt))
+        r22 = np.zeros((len(data_unit_indices), nfoldi, nfoldt))
 
-        r12_reg = np.zeros((nf, len(reg_methods), nfoldi, nfoldt))
-        r11_reg = np.zeros((nf, len(reg_methods), nfoldi, nfoldt))
-        r22_reg = np.zeros((nf, len(reg_methods), nfoldi, nfoldt))
+        r12_reg = np.zeros((len(data_unit_indices), len(reg_methods), nfoldi, nfoldt))
+        r11_reg = np.zeros((len(data_unit_indices), len(reg_methods), nfoldi, nfoldt))
+        r22_reg = np.zeros((len(data_unit_indices), len(reg_methods), nfoldi, nfoldt))
 
-        r12_reg_sitfit = np.zeros((nf, len(reg_methods), nfoldi, nfoldt))
-        r11_reg_sitfit = np.zeros((nf, len(reg_methods), nfoldi, nfoldt))
-        r22_reg_sitfit = np.zeros((nf, len(reg_methods), nfoldi, nfoldt))
+        r12_reg_sitfit = np.zeros((len(data_unit_indices), len(reg_methods), nfoldi, nfoldt))
+        r11_reg_sitfit = np.zeros((len(data_unit_indices), len(reg_methods), nfoldi, nfoldt))
+        r22_reg_sitfit = np.zeros((len(data_unit_indices), len(reg_methods), nfoldi, nfoldt))
 
 
         regressions_results = []
@@ -71,8 +71,8 @@ class MappingUnitTest:
             for ft in range(nfoldt):
 
                 indices = np.random.permutation(nt)
-                D1 = self.D[:, :, indices[:int(nt * splitfract)]].mean(2)
-                D2 = self.D[:, :, indices[int(nt * splitfract):]].mean(2)
+                D1 = self.D[:, np.array(data_unit_indices)[:,np.newaxis], indices[:int(nt * splitfract)]].mean(2)
+                D2 = self.D[:, np.array(data_unit_indices)[:,np.newaxis], indices[int(nt * splitfract):]].mean(2)
 
                 PCA_ncomponents = self.PCA_ncomponents_list[0]
                 explained_var_ratio = self.explained_var_ratio_list[0]
@@ -82,25 +82,25 @@ class MappingUnitTest:
                 Ahat = np.dot(np.linalg.pinv(M[indtraini, :]), D1[indtraini, :])
                 D1_test, D1_pred = D1[indtesti, :], np.dot(M[indtesti, :], Ahat)
                 if corr_method_for_inv == 'pearson':
-                    r12[:, fi, ft] = [ss.pearsonr(D1_pred[:, indf], D1_test[:, indf])[0] for indf in range(nf)]
+                    r12[:, fi, ft] = [ss.pearsonr(D1_pred[:, indf], D1_test[:, indf])[0] for indf in range(len(data_unit_indices))]
                 else:
-                    r12[:, fi, ft] = [ss.spearmanr(D1_pred[:, indf], D1_test[:, indf])[0] for indf in range(nf)]
+                    r12[:, fi, ft] = [ss.spearmanr(D1_pred[:, indf], D1_test[:, indf])[0] for indf in range(len(data_unit_indices))]
 
                 # DENOMINATOR consistency between trial sets 1 & 2 on test images
                 D2_test = D2[indtesti, :]
                 if corr_method_for_inv == 'pearson':
-                    r22[:, fi, ft] = [ss.pearsonr(D1_test[:, indf], D2_test[:, indf])[0] for indf in range(nf)]
+                    r22[:, fi, ft] = [ss.pearsonr(D1_test[:, indf], D2_test[:, indf])[0] for indf in range(len(data_unit_indices))]
                 else:
-                    r22[:, fi, ft] = [ss.spearmanr(D1_test[:, indf], D2_test[:, indf])[0] for indf in range(nf)]
+                    r22[:, fi, ft] = [ss.spearmanr(D1_test[:, indf], D2_test[:, indf])[0] for indf in range(len(data_unit_indices))]
 
                 # DENOMINATOR LHS map consistency between trial sets 1 & 2 on test images
                 Ahat1 = np.dot(np.linalg.pinv(M[indtraini, :]), D1[indtraini, :])
                 Ahat2 = np.dot(np.linalg.pinv(M[indtraini, :]), D2[indtraini, :])
                 lhs1, lhs2 = np.dot(M[indtesti, :], Ahat1), np.dot(M[indtesti, :], Ahat2)
                 if corr_method_for_inv == 'pearson':
-                    r11[:, fi, ft] = [ss.pearsonr(lhs1[:, indf], lhs2[:, indf])[0] for indf in range(nf)]
+                    r11[:, fi, ft] = [ss.pearsonr(lhs1[:, indf], lhs2[:, indf])[0] for indf in range(len(data_unit_indices))]
                 else:
-                    r11[:, fi, ft] = [ss.spearmanr(lhs1[:, indf], lhs2[:, indf])[0] for indf in range(nf)]
+                    r11[:, fi, ft] = [ss.spearmanr(lhs1[:, indf], lhs2[:, indf])[0] for indf in range(len(data_unit_indices))]
 
                 # Regression
                 start = time.time()
@@ -151,7 +151,7 @@ class MappingUnitTest:
                     # site fit
                     if report_sitefit[r]:
                         start_sitefit = time.time()
-                        for n in range(nf):
+                        for n in range(len(data_unit_indices)):
                             return_fitted_reg = False
                             r_Nom, _ = Mapping.Numerator(train_inds, test_inds, model_features_X, half1[:, n], reg_method, reg_params,
                                                          zscored_observations, return_fitted_reg)
