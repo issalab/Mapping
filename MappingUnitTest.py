@@ -45,7 +45,7 @@ class MappingUnitTest:
         return M
 
     def get_mappings_unit_test(self, Data_params, reg_methods, reg_params_list, spearman_brown, report_sitefit, report_popfit):
-        ni,nf,nt,nfoldi,nfoldt,trainfraci,splitfract, noise_dist, sds, Collinearity,  various_unit_stds, corr_method_for_inv, noisy_map, data_unit_indices = Data_params
+        ni,nf,nt,nfoldi,nfoldt,trainfraci,splitfract, noise_dist, sds, Collinearity,  corr_method_for_inv, noisy_map, data_unit_indices = Data_params
 
         r12 = np.zeros((len(data_unit_indices), nfoldi, nfoldt))
         r11 = np.zeros((len(data_unit_indices), nfoldi, nfoldt))
@@ -153,6 +153,7 @@ class MappingUnitTest:
                         start_sitefit = time.time()
                         for n in range(len(data_unit_indices)):
                             return_fitted_reg = False
+
                             r_Nom, _ = Mapping.Numerator(train_inds, test_inds, model_features_X, half1[:, n], reg_method, reg_params,
                                                          zscored_observations, return_fitted_reg)
 

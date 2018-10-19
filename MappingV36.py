@@ -118,7 +118,6 @@ class MappingV36:
             reg.fit(X_train, y_train)
             reg_param = [reg.n_iter_]
 
-
         y_pred = reg.predict(X_test)
 
         if zscored_observations:
