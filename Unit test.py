@@ -2,7 +2,8 @@ import pickle
 import numpy as np
 from DataMapModel import DataMapModel as DataMapModelClass
 from MappingUnitTest import MappingUnitTest as MappingUnitTestClass
-
+import time
+start_time = time.time()
 
 resultdir = '/home/tahereh/Documents/Research/Results/Mapping_unit_test/'
 neuralfeaturesdir = '/home/tahereh/Documents/Research/features/neural_features/'
@@ -13,11 +14,12 @@ datadir = '/home/tahereh/Documents/Research/Data/DiCarlo/'
 # ------------------------------------------------------------
 nf = 20
 
-purpose_of_this_run = 'ridgeCV10-10-10-sds-1to1-5sites_5cmp'
 load_saved_data = True
-data_unit_indices = np.random.permutation(20)[0:5]
+data_unit_indices = range(20)  #[0,4,8,12,16]#np.random.permutation(20)[0:5]
 
-for nc in [5,15,20]:
+purpose_of_this_run = 'ridgeCV20-10-10-sds-1to1-%dsites'%len(data_unit_indices)
+
+for nc in [5, 8, 11, 14, 17, 20]:
 
     for imag_feat_ratio in [1, 2, 4]:
 
@@ -64,7 +66,7 @@ for nc in [5,15,20]:
         #     report_sitefit = True
 
         reg_methods = ['OMP', 'PLS', 'ridge', 'ridge']
-        reg_params_list = [[], 5, [20, -10, 10], [20, -10, 10]] # for ridge [n_alpha, alpha0, alpha1]
+        reg_params_list = [[], nc, [20, -10, 10], [20, -10, 10]] # for ridge [n_alpha, alpha0, alpha1]
         report_popfit = [False, True, True, True]  # [False, True, True]
         report_sitefit = [True, True, True, True]  # [False, False, False, False]  # [True, True, True]
 
@@ -73,7 +75,7 @@ for nc in [5,15,20]:
         # ------------------------------------------------------------
         # PCA_ncomponents = -1 means no PCA will be applied on the model,
         # PCA_ncomponents = 0 means refer to the explained_var_ratio to calculate the number of components for PCA
-        PCA_ncomponents_list = [-1, -1, -1, -1, 5]  # The first one is for pinv and the rest for the regressions
+        PCA_ncomponents_list = [-1, -1, -1, -1, nc]  # The first one is for pinv and the rest for the regressions
         explained_var_ratio_list = [0, 0, 0, 0, 0]
         # ------------------------------------------------------------
         #
@@ -114,3 +116,5 @@ for nc in [5,15,20]:
 
             pickle.dump(data_list, open(resultdir + 'unit_test_%s_%s_%s_%s, ni%d_nf%d_nt%d_collinearity%s_%s_SB%s_noisymap%s_statsfromHvM%s_%dcmp_%s.pickle' % (
                 load_saved_data, reg_methods, reg_params_list, PCA_ncomponents_list, ni, nf, nt, Collinearity, noise_dist, spearman_brown, noisy_map,stats_from_data,nc,purpose_of_this_run), 'wb'))
+
+print(time.time()-start_time)

@@ -130,7 +130,7 @@ class MappingUnitTest:
                             _, r_Nom_sites = Mapping.Numerator(train_inds, test_inds, model_features_X, half1, reg_method,
                                                                    reg_params, zscored_observations, return_fitted_reg)
 
-                        _, r_RHS_sites = Mapping.Denom_RHS(train_inds, test_inds, half1, half2)
+                        _, r_RHS_sites = Mapping.Denom_RHS(test_inds, half1, half2)
                         _, r_LHS_sites = Mapping.Denom_LHS(train_inds, test_inds, model_features_X, half1, half2, reg_method, reg_params,
                                                                zscored_observations, return_fitted_reg)
                         r12_reg[:, r, fi, ft] = r_Nom_sites
@@ -166,7 +166,7 @@ class MappingUnitTest:
                             if report_popfit[r]:
                                 r22_reg_sitfit[:, r, fi, ft] = r_RHS_sites
                             else:
-                                r_RHS, _ = Mapping.Denom_RHS(train_inds, test_inds, half1[:, n], half2[:, n])
+                                r_RHS, _ = Mapping.Denom_RHS(test_inds, half1[:, n], half2[:, n])
                                 r22_reg_sitfit[n, r, fi, ft] = r_RHS
                         time_sitefit.append([time.time() -start_sitefit])
 

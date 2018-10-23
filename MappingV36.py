@@ -184,7 +184,7 @@ class MappingV36:
                                                                          return_pred, return_fitted_reg)
             return r_test, r_test_sites, reg
 
-    def Denom_LHS(self,train_inds, test_inds, model_features_X, half1, half2, reg_method, reg_params,
+    def Denom_LHS(self, train_inds, test_inds, model_features_X, half1, half2, reg_method, reg_params,
                   zscored_observations, return_fitted_reg):
         return_pred = True
 
@@ -222,7 +222,7 @@ class MappingV36:
 
             return r_test, r_test_sites, reg1, reg2
 
-    def Denom_RHS(self, train_inds, test_inds, half1, half2):
+    def Denom_RHS(self, test_inds, half1, half2):
 
         if (len(half1.shape) == 2) and (len(half2.shape) == 2):
             r_test = self.r_corr(half1[test_inds, :], half2[test_inds, :])
@@ -361,7 +361,7 @@ class MappingV36:
 
             r_LHS, r_LHS_sites = self.Denom_LHS_fixedmap(train_inds, test_inds, model_layer, half1, half2,
                                                     reg1_fitted, reg2_fitted, zscored_observations)
-            r_RHS, r_RHS_sites = self.Denom_RHS(train_inds, test_inds, half1, half2)
+            r_RHS, r_RHS_sites = self.Denom_RHS(test_inds, half1, half2)
 
             r_corrected_sites = [self.r_corrected_consis(r_Nom_sites[s], r_RHS_sites[s], r_LHS_sites[s])
                                  for s in range(n_neurons)]
