@@ -46,3 +46,13 @@ class ReadData:
         V4_trial_V6 = Data_trial_V6[np.where(self.DF_neu['region'] == 'V4')[0], :, :, :]
 
         return [IT_trial_V0, IT_trial_V3, IT_trial_V6], [V4_trial_V0, V4_trial_V3, V4_trial_V6]
+
+    def save_standard_IT(self):
+        Neu_trial = IT[1:]
+
+        Neu_features = Mapping.get_Neu_trial_V36(Neu_trial, time_interval_fixed, times)
+        Neu_features = Neu_features.swapaxes(0, 1)
+
+    def load_standard_IT(self):
+        self.get_data()
+
