@@ -102,8 +102,8 @@ class MappingModelToData:
                     reg_params = reg_params_list[r]
 
                     train_inds, test_inds = indtraini, indtesti
-                    PCA_ncomponents = self.PCA_ncomponents_list[0]
-                    explained_var_ratio = self.explained_var_ratio_list[0]
+                    PCA_ncomponents = self.PCA_ncomponents_list[r]
+                    explained_var_ratio = self.explained_var_ratio_list[r]
                     M_PCA = self.get_transformed_model(PCA_ncomponents, explained_var_ratio)
                     model_features_X, half1, half2 = M_PCA, D1, D2
                     zscored_observations = False

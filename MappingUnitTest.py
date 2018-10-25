@@ -110,8 +110,8 @@ class MappingUnitTest:
 
                 for r, reg_method in enumerate(reg_methods):
                     reg_params = reg_params_list[r]
-                    PCA_ncomponents = self.PCA_ncomponents_list[r+1]
-                    explained_var_ratio = self.explained_var_ratio_list[r+1]
+                    PCA_ncomponents = self.PCA_ncomponents_list[r]
+                    explained_var_ratio = self.explained_var_ratio_list[r]
                     M = self.get_model(PCA_ncomponents, explained_var_ratio)
 
                     train_inds, test_inds = indtraini, indtesti

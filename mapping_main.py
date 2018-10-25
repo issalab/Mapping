@@ -106,7 +106,7 @@ nfoldi = 1
 nfoldt = 1
 
 data_unit_indices = range(nf)
-purpose_of_this_run = 'masterplotwithpinv'
+purpose_of_this_run = 'masterplot'#  'masterplotwithpinv'
 n_components_range = [5, 12, 25, 35, 50,80,100,128, 168]
 
 for nc in n_components_range:
@@ -133,10 +133,10 @@ for nc in n_components_range:
     #     report_popfit = False
     #     report_sitefit = True
 
-    reg_methods = ['PLS', 'ridge','ridge']
+    reg_methods = ['PLS', 'ridge', 'ridge']
     reg_params_list = [nc, [20, -10, 10], [20, -10, 10]]  # for ridge [n_alpha, alpha0, alpha1]
-    report_popfit = [True, True,True]  # [False, True, True]
-    report_sitefit = [False, False,True]  # [False, False, False, False]  # [True, True, True]
+    report_popfit = [True, True, True]  # [False, True, True]
+    report_sitefit = [False, False, True]  # [False, False, False, False]  # [True, True, True]
 
     # ------------------------------------------------------------
     # Map Parameters
