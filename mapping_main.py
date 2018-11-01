@@ -106,7 +106,7 @@ nfoldi = 1
 nfoldt = 1
 
 data_unit_indices = range(nf)
-purpose_of_this_run = 'masterplot'#  'masterplotwithpinv'
+purpose_of_this_run = 'testpinvsite'  #  'masterplotwithpinv'
 n_components_range = [5, 12, 25, 35, 50,80,100,128, 168]
 
 for nc in n_components_range:

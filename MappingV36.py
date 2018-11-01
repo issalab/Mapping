@@ -167,12 +167,12 @@ class MappingV36:
     def spearman_brown_correction(self, r):
         return 2*r/(1+r)
 
-    def Numerator(self,train_inds, test_inds, model_features_X, half1, reg_method, reg_params,
+    def Numerator(self, train_inds, test_inds, model_features_X, half1, reg_method, reg_params,
                   zscored_observations, return_fitted_reg):
 
         return_pred = False
 
-        if return_fitted_reg == False:
+        if return_fitted_reg is False:
             r_test, reg_param, r_test_sites = self.mapping_half_V36(model_features_X, half1, train_inds, test_inds,
                                                                reg_method, reg_params, zscored_observations,
                                                                return_pred, return_fitted_reg)
@@ -233,10 +233,10 @@ class MappingV36:
 
         return r_test, r_test_sites
 
-    def Numerator_fixedmap(self, train_inds, test_inds, features1, features2_half, reg_fitted, zscored_observations):
+    def Numerator_fixedmap(self, train_inds, test_inds, model_features_X, half2, reg_fitted, zscored_observations):
 
-        X = features1
-        y = features2_half
+        X = model_features_X
+        y = half2
 
         if (X.shape[0] != y.shape[0]):
             print('Error! The number of images should match.')
@@ -244,7 +244,6 @@ class MappingV36:
         if (len(X.shape) == 2) and (len(y.shape) == 2):
             X_train, X_test, y_train, y_test = \
                 X[train_inds, :], X[test_inds, :], y[train_inds, :], y[test_inds, :]
-
 
         elif (len(X.shape) == 2) and (len(y.shape) == 1):
             X_train, X_test, y_train, y_test = \
@@ -269,12 +268,12 @@ class MappingV36:
 
         return r_test, r_test_sites
 
-    def Denom_LHS_fixedmap(self,train_inds, test_inds, features1, features2_half1, features2_half2, reg1_fitted, reg2_fitted, \
+    def Denom_LHS_fixedmap(self,train_inds, test_inds, model_features_X, half1, half2, reg1_fitted, reg2_fitted, \
                            zscored_observations):
 
-        X = features1
-        y1 = features2_half1
-        y2 = features2_half2
+        X = model_features_X
+        y1 = half1
+        y2 = half2
 
         if (X.shape[0] != y1.shape[0]):
             print('Error! The number of images should match.')
@@ -282,7 +281,7 @@ class MappingV36:
         if (len(X.shape) == 2) and (len(y1.shape) == 2):
             X_train, X_test, y1_train, y1_test, y2_train, y2_test = X[train_inds, :], X[test_inds, :], \
                                                                     y1[train_inds, :], y1[test_inds, :],\
-                                                                    y2[train_inds, :],y2[test_inds,:]
+                                                                    y2[train_inds, :], y2[test_inds,:]
 
         elif (len(X.shape) == 2) and(len(y2.shape) == 1):
             X_train, X_test, y1_train, y1_test, y2_train, y2_test = \
@@ -329,16 +328,15 @@ class MappingV36:
         n_imsplits = 1
         n_trsplits = 1
 
-        half1, half2 = self.mean_trial_split(inds1, inds2,
-                                             self.get_Neu_trial_V36(Neu_trial, time_interval_fixed, times))
+        half1, half2 = self.get_Neu_trial_V36(Neu_trial, time_interval_fixed, times)
 
         start = time.time()
 
-        dum, dum, reg_fitted = self.Numerator(train_inds, test_inds, model_layer, half1, reg_method,
+        _, _, reg_fitted = self.Numerator(train_inds, test_inds, model_layer, half1, reg_method,
                                               reg_params, zscored_observations, return_fitted_reg)
-        dum, dum, reg1_fitted, reg2_fitted = self.Denom_LHS(train_inds, test_inds, model_layer, half1, half2,
-                                                            reg_method,
-                                                            reg_params, zscored_observations, return_fitted_reg)
+
+        _, _, reg1_fitted, reg2_fitted = self.Denom_LHS(train_inds, test_inds, model_layer, half1, half2,
+                                                        reg_method, reg_params, zscored_observations, return_fitted_reg)
         print((time.time() - start) / 60, 'minutes')
         n_neurons = half1.shape[1]
 
@@ -350,10 +348,12 @@ class MappingV36:
 
         print((time.time() - start) / 60, 'minutes')
 
+        coef_fixed = reg_fitted.coef_
+        coef_flexible = []
         for indt, t in enumerate(flexible_times):
             print(t, (time.time() - start) / 60, 'minutes')
             time_interval = [t, t + 10]
-            half1, half2 = self.mean_trial_split(inds1, inds2, self.get_Neu_trial_V36(Neu_trial, time_interval, times))
+            half1, half2 = self.get_Neu_trial_V36(Neu_trial, time_interval, times)
 
             # fixed map
             r_Nom, r_Nom_sites = self.Numerator_fixedmap(train_inds, test_inds, model_layer, half1, reg_fitted,
@@ -375,10 +375,11 @@ class MappingV36:
 
             # flexible map
 
-            return_fitted_reg = False
-            r_Nom_fl, r_Nom_sites_fl = self.Numerator(train_inds, test_inds, model_layer, half1, reg_method,
+            return_fitted_reg = True
+            r_Nom_fl, r_Nom_sites_fl, reg_flixable = self.Numerator(train_inds, test_inds, model_layer, half1, reg_method,
                                                  reg_params, zscored_observations, return_fitted_reg)
 
+            return_fitted_reg = False
             r_LHS_fl, r_LHS_sites_fl = self.Denom_LHS(train_inds, test_inds, model_layer, half1, half2, reg_method,
                                                  reg_params, zscored_observations, return_fitted_reg)
 
@@ -391,13 +392,15 @@ class MappingV36:
             r_sites_flexible[2, :, indt] = r_LHS_sites_fl
             r_sites_flexible[3, :, indt] = r_corrected_sites_fl
 
+            coef_flexible.append([reg_flixable.coef_])
+
         neurons_negative_denom = set(np.where(np.isnan(r_sites_fixed[3]))[0]).union(
             set(np.where(np.isnan(r_sites_flexible[3]))[0]))
 
         list_acceptable_neurons = list(range(n_neurons))
         [list_acceptable_neurons.remove(n) for n in neurons_negative_denom]
 
-        return r_sites_fixed, r_sites_flexible, list_acceptable_neurons
+        return r_sites_fixed, r_sites_flexible, list_acceptable_neurons, coef_fixed, coef_flexible
 
 # if __name__ == "__main__":
 #     MappingV36()

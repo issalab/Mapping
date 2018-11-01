@@ -1,7 +1,8 @@
 import pickle
 import numpy as np
 from DataMapModel import DataMapModel as DataMapModelClass
-from MappingUnitTest import MappingUnitTest as MappingUnitTestClass
+# from MappingUnitTest import MappingUnitTest as MappingUnitTestClass
+from MappingModelToData import MappingModelToData as MappingModelToDataClass
 import time
 start_time = time.time()
 
@@ -12,18 +13,18 @@ datadir = '/home/tahereh/Documents/Research/Data/DiCarlo/'
 # ------------------------------------------------------------
 # Data Parameters
 # ------------------------------------------------------------
-nf = 20
+nf = 168
 
-load_saved_data = True
-data_unit_indices = range(20)  #[0,4,8,12,16]#np.random.permutation(20)[0:5]
+load_saved_data = True    # False: will generate and save a synthetic data file
+data_unit_indices = range(nf)  #range(5)  #[0,4,8,12,16]#np.random.permutation(20)[0:5]
 
-purpose_of_this_run = 'ridgeCV20-10-10-sds-1to1-%dsites'%len(data_unit_indices)
+purpose_of_this_run = 'unit_test_unified_%dsites'%len(data_unit_indices)
 
 for nc in [5, 8, 11, 14, 17, 20]:
 
-    for imag_feat_ratio in [1, 2, 4]:
+    for imag_feat_ratio in [0.8, 1, 2, 15]:
 
-        ni = imag_feat_ratio*nf  # # of features
+        ni = int(imag_feat_ratio*nf)  # # of features
         nt = 46
 
         trainfraci = 0.8  # image trainfrac
@@ -31,16 +32,12 @@ for nc in [5, 8, 11, 14, 17, 20]:
         nfoldi = 10
         nfoldt = 5
         noisy_map = False
-
         Collinearity = False
 
         Data_type = 'synthetic'  # 'synthetic'#'HvMlike'
-        stats_from_data = False
-        noise_dist = 'normal'#'normal' # 'HvM_poisson'
+        stats_from_data = True
+        noise_dist = 'normal'  # 'normal' # 'HvM_poisson'
         sds = np.logspace(-1, 1, num=int(nf))  # np.arange(0.5, 10, 1)
-
-
-        print(data_unit_indices)
 
         # ------------------------------------------------------------
         # Regression Parameters
@@ -108,11 +105,15 @@ for nc in [5, 8, 11, 14, 17, 20]:
             A, D, Dmu, sds = pickle.load(file)
             file.close()
 
-            MappingUnitTest = MappingUnitTestClass(D, Dmu, A, PCA_ncomponents_list, explained_var_ratio_list)
+            M = np.matmul(Dmu, A)
 
-            Data_params = [ni, nf, nt, nfoldi, nfoldt, trainfraci, splitfract, noise_dist,  sds, Collinearity, corr_method_for_inv, noisy_map, data_unit_indices]
+            print(np.linalg.matrix_rank(M))
 
-            data_list = MappingUnitTest.get_mappings_unit_test(Data_params, reg_methods, reg_params_list, spearman_brown, report_sitefit, report_popfit)
+            MappingUnitTest = MappingModelToDataClass(M, D, PCA_ncomponents_list, explained_var_ratio_list)
+
+            Data_params = [ni,nf,nt,nfoldi,nfoldt,trainfraci,splitfract, data_unit_indices]
+
+            data_list = MappingUnitTest.get_mappings(Data_params, reg_methods, reg_params_list, spearman_brown, report_sitefit, report_popfit)
 
             pickle.dump(data_list, open(resultdir + 'unit_test_%s_%s_%s_%s, ni%d_nf%d_nt%d_collinearity%s_%s_SB%s_noisymap%s_statsfromHvM%s_%dcmp_%s.pickle' % (
                 load_saved_data, reg_methods, reg_params_list, PCA_ncomponents_list, ni, nf, nt, Collinearity, noise_dist, spearman_brown, noisy_map,stats_from_data,nc,purpose_of_this_run), 'wb'))

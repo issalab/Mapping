@@ -45,12 +45,15 @@ class MappingModelToData:
         return M_PCA
 
     def get_mappings(self, Data_params, reg_methods, reg_params_list, spearman_brown, report_sitefit, report_popfit):
-        ni,nf,nt,nfoldi,nfoldt,trainfraci,splitfract, data_unit_indices = Data_params
+        ni, nf, nt, nfoldi, nfoldt, trainfraci, splitfract, data_unit_indices = Data_params
 
         r12 = np.zeros((len(data_unit_indices), nfoldi, nfoldt))
         r11 = np.zeros((len(data_unit_indices), nfoldi, nfoldt))
         r22 = np.zeros((len(data_unit_indices), nfoldi, nfoldt))
 
+        r12_sitefit = np.zeros((len(data_unit_indices), nfoldi, nfoldt))
+        r11_sitefit = np.zeros((len(data_unit_indices), nfoldi, nfoldt))
+        r22_sitefit = np.zeros((len(data_unit_indices), nfoldi, nfoldt))
 
         r12_reg = np.zeros((len(data_unit_indices), len(reg_methods), nfoldi, nfoldt))
         r11_reg = np.zeros((len(data_unit_indices), len(reg_methods), nfoldi, nfoldt))
@@ -74,9 +77,14 @@ class MappingModelToData:
                 D2 = self.D[:, np.array(data_unit_indices)[:, np.newaxis], indices[int(nt * splitfract):]].mean(2)
 
                 # Pseudo-inverse
+                PCA_ncomponents = self.PCA_ncomponents_list[0]
+                explained_var_ratio = self.explained_var_ratio_list[0]
+                M_PCA = self.get_transformed_model(PCA_ncomponents, explained_var_ratio)
+
+                # pop fit
                 # NUMERATOR: Fit on train, test on test
-                Ahat = np.dot(np.linalg.pinv(self.M[indtraini, :]), D1[indtraini, :])
-                D1_test, D1_pred = D1[indtesti, :], np.dot(self.M[indtesti, :], Ahat)
+                Ahat = np.dot(np.linalg.pinv(M_PCA[indtraini, :]), D1[indtraini, :])
+                D1_test, D1_pred = D1[indtesti, :], np.dot(M_PCA[indtesti, :], Ahat)
 
                 r12[:, fi, ft] = [ss.pearsonr(D1_pred[:, indf], D1_test[:, indf])[0] for indf in range(len(data_unit_indices))]
 
@@ -86,11 +94,34 @@ class MappingModelToData:
                 r22[:, fi, ft] = [ss.pearsonr(D1_test[:, indf], D2_test[:, indf])[0] for indf in range(len(data_unit_indices))]
 
                 # DENOMINATOR LHS map consistency between trial sets 1 & 2 on test images
-                Ahat1 = np.dot(np.linalg.pinv(self.M[indtraini, :]), D1[indtraini, :])
-                Ahat2 = np.dot(np.linalg.pinv(self.M[indtraini, :]), D2[indtraini, :])
-                lhs1, lhs2 = np.dot(self.M[indtesti, :], Ahat1), np.dot(self.M[indtesti, :], Ahat2)
+                Ahat1 = np.dot(np.linalg.pinv(M_PCA[indtraini, :]), D1[indtraini, :])
+                Ahat2 = np.dot(np.linalg.pinv(M_PCA[indtraini, :]), D2[indtraini, :])
+                lhs1, lhs2 = np.dot(M_PCA[indtesti, :], Ahat1), np.dot(M_PCA[indtesti, :], Ahat2)
 
                 r11[:, fi, ft] = [ss.pearsonr(lhs1[:, indf], lhs2[:, indf])[0] for indf in range(len(data_unit_indices))]
+
+                # site fit
+                # NUMERATOR: Fit on train, test on test
+                for n in range(len(data_unit_indices)):
+                    Ahat = np.dot(np.linalg.pinv(M_PCA[indtraini, n][:, np.newaxis]), D1[indtraini, n][:, np.newaxis])
+                    print(M_PCA[indtraini, n].shape, M_PCA[indtraini, n][np.newaxis, 0].shape, Ahat.shape)
+                    D1_test, D1_pred = D1[indtesti, n][:, np.newaxis], np.dot(M_PCA[indtesti, n][:, np.newaxis], Ahat)
+
+                    r12_sitefit[n, fi, ft] = ss.pearsonr(D1_pred, D1_test)[0]
+
+                    # DENOMINATOR consistency between trial sets 1 & 2 on test images
+                    D2_test = D2[indtesti, n][:, np.newaxis]
+
+                    r22_sitefit[n, fi, ft] = ss.pearsonr(D1_test, D2_test)[0]
+
+                    # DENOMINATOR LHS map consistency between trial sets 1 & 2 on test images
+                    Ahat1 = np.dot(np.linalg.pinv(M_PCA[indtraini, n][:, np.newaxis]), D1[indtraini, n][:, np.newaxis])
+                    Ahat2 = np.dot(np.linalg.pinv(M_PCA[indtraini, n][:, np.newaxis]), D2[indtraini, n][:, np.newaxis])
+                    lhs1, lhs2 = np.dot(M_PCA[indtesti, n][:, np.newaxis], Ahat1), np.dot(M_PCA[indtesti, n][:, np.newaxis], Ahat2)
+
+                    r11_sitefit[n, fi, ft] = ss.pearsonr(lhs1, lhs2)[0]
+
+
 
                 # Regression
                 start = time.time()
@@ -102,9 +133,11 @@ class MappingModelToData:
                     reg_params = reg_params_list[r]
 
                     train_inds, test_inds = indtraini, indtesti
-                    PCA_ncomponents = self.PCA_ncomponents_list[r]
-                    explained_var_ratio = self.explained_var_ratio_list[r]
+                    PCA_ncomponents = self.PCA_ncomponents_list[r+1]  # index is r+1 because pinv was the first
+                    explained_var_ratio = self.explained_var_ratio_list[r+1]
+
                     M_PCA = self.get_transformed_model(PCA_ncomponents, explained_var_ratio)
+
                     model_features_X, half1, half2 = M_PCA, D1, D2
                     zscored_observations = False
                     return_fitted_reg = False
@@ -162,10 +195,12 @@ class MappingModelToData:
                     print('sitefit for %s took %.2f seconds' %(reg_method, np.mean(time_sitefit)))
 
         r12, r11, r22 = np.mean(r12, 2), np.mean(r11, 2), np.mean(r22, 2)
+        r12_sitefit, r11_sitefit, r22_sitefit = np.mean(r12_sitefit, 2), np.mean(r11_sitefit, 2), np.mean(r22_sitefit, 2)
+        print(r12_sitefit.shape)
         r12_reg, r11_reg, r22_reg = np.mean(r12_reg.mean(3), 2), np.mean(r11_reg.mean(3), 2), np.mean(r22_reg.mean(3), 2)
         r12_reg_sitfit, r11_reg_sitfit, r22_reg_sitfit = np.mean(r12_reg_sitfit.mean(3), 2), np.mean(r11_reg_sitfit.mean(3), 2), np.mean(r22_reg_sitfit.mean(3), 2)
 
-        data_list = [r12,r11,r22,r12_reg,r11_reg,r22_reg,r12_reg_sitfit,r11_reg_sitfit,r22_reg_sitfit]
+        data_list = [r12,r11,r22,r12_sitefit,r11_sitefit,r22_sitefit,r12_reg,r11_reg,r22_reg,r12_reg_sitfit,r11_reg_sitfit,r22_reg_sitfit]
 
         return data_list
 

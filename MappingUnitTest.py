@@ -10,19 +10,17 @@ resultdir = '/home/tahereh/Documents/Research/Results/Mapping_unit_test/'
 
 class MappingUnitTest:
 
-    def __init__(self, D, Dmu,  A, PCA_ncomponents_list, explained_var_ratio_list):
+    def __init__(self, D, M, PCA_ncomponents_list, explained_var_ratio_list):
         self.D = D
-        self.Dmu = Dmu
-        self.A = A
+        self.M = M
         self.nf = D.shape[1]
         self.PCA_ncomponents_list = PCA_ncomponents_list
         self.explained_var_ratio_list = explained_var_ratio_list
 
-    def get_model(self, PCA_ncomponents=-1, explained_var_ratio=None):
+    def get_transformed_model(self, PCA_ncomponents=-1, explained_var_ratio=None):
         # PCA_ncomponents=-1 means no PCA will be applied
         # PCA_ncomponents=0 means we required a given explained_var_ratio
         # PCA_ncomponents>0 means perform PCA with PCA_ncomponents components
-        M = np.matmul(self.Dmu, self.A)  #
 
         if PCA_ncomponents == 0:
             ncomponents = int(self.nf*explained_var_ratio)
@@ -59,8 +57,6 @@ class MappingUnitTest:
         r11_reg_sitfit = np.zeros((len(data_unit_indices), len(reg_methods), nfoldi, nfoldt))
         r22_reg_sitfit = np.zeros((len(data_unit_indices), len(reg_methods), nfoldi, nfoldt))
 
-
-        regressions_results = []
         for fi in range(nfoldi):
 
             # train/test image split
