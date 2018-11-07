@@ -196,7 +196,7 @@ class MappingModelToData:
 
         r12, r11, r22 = np.mean(r12, 2), np.mean(r11, 2), np.mean(r22, 2)
         r12_sitefit, r11_sitefit, r22_sitefit = np.mean(r12_sitefit, 2), np.mean(r11_sitefit, 2), np.mean(r22_sitefit, 2)
-        print(r12_sitefit.shape)
+
         r12_reg, r11_reg, r22_reg = np.mean(r12_reg.mean(3), 2), np.mean(r11_reg.mean(3), 2), np.mean(r22_reg.mean(3), 2)
         r12_reg_sitfit, r11_reg_sitfit, r22_reg_sitfit = np.mean(r12_reg_sitfit.mean(3), 2), np.mean(r11_reg_sitfit.mean(3), 2), np.mean(r22_reg_sitfit.mean(3), 2)
 

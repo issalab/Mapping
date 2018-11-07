@@ -20,17 +20,17 @@ data_unit_indices = range(nf)  #range(5)  #[0,4,8,12,16]#np.random.permutation(2
 
 purpose_of_this_run = 'unit_test_unified_%dsites'%len(data_unit_indices)
 
-for nc in [5, 8, 11, 14, 17, 20]:
+for nc in [20, 50, 100, 168]:
 
-    for imag_feat_ratio in [0.8, 1, 2, 15]:
+    for imag_feat_ratio in [1,2]:
 
         ni = int(imag_feat_ratio*nf)  # # of features
         nt = 46
 
         trainfraci = 0.8  # image trainfrac
         splitfract = 0.5  # trial splitfrac
-        nfoldi = 10
-        nfoldt = 5
+        nfoldi = 2
+        nfoldt = 2
         noisy_map = False
         Collinearity = False
 
@@ -107,7 +107,6 @@ for nc in [5, 8, 11, 14, 17, 20]:
 
             M = np.matmul(Dmu, A)
 
-            print(np.linalg.matrix_rank(M))
 
             MappingUnitTest = MappingModelToDataClass(M, D, PCA_ncomponents_list, explained_var_ratio_list)
 
@@ -115,7 +114,7 @@ for nc in [5, 8, 11, 14, 17, 20]:
 
             data_list = MappingUnitTest.get_mappings(Data_params, reg_methods, reg_params_list, spearman_brown, report_sitefit, report_popfit)
 
-            pickle.dump(data_list, open(resultdir + 'unit_test_%s_%s_%s_%s, ni%d_nf%d_nt%d_collinearity%s_%s_SB%s_noisymap%s_statsfromHvM%s_%dcmp_%s.pickle' % (
-                load_saved_data, reg_methods, reg_params_list, PCA_ncomponents_list, ni, nf, nt, Collinearity, noise_dist, spearman_brown, noisy_map,stats_from_data,nc,purpose_of_this_run), 'wb'))
+            pickle.dump(data_list, open(resultdir + 'unit_test_%s_%s_%s_%s, ni%d_nf%d_nt%d_rankM%d_collinearity%s_%s_SB%s_noisymap%s_statsfromHvM%s_%dcmp_%s.pickle' % (
+                load_saved_data, reg_methods, reg_params_list, PCA_ncomponents_list, ni, nf, nt, np.linalg.matrix_rank(M), Collinearity, noise_dist, spearman_brown, noisy_map,stats_from_data,nc,purpose_of_this_run), 'wb'))
 
 print(time.time()-start_time)
